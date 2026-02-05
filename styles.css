@@ -277,6 +277,10 @@ body {
   }
 }
 
+.btn-short {
+  display: none;
+}
+
 @media (max-width: 520px) {
   .topbar-inner {
     gap: 10px;
@@ -367,12 +371,11 @@ body {
   .modal-body {
     padding: 10px;
   }
-}
 
-.btn-short {
-  display: none;
+  .cmd-hint {
+    display: none;
+  }
 }
-
 .hero-kicker {
   display: inline-flex;
   align-items: center;

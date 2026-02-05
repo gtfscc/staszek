@@ -1047,7 +1047,7 @@
     title.textContent = "Szybka nawigacja";
     body.textContent = "";
 
-    const hint = el("div", { class: "card" }, [
+    const hint = el("div", { class: "card cmd-hint" }, [
       el("h3", {}, "Skróty"),
       el("p", {}, "Enter: przejdź • Esc: zamknij • Strzałki: wybór"),
     ]);
