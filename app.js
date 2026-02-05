@@ -58,11 +58,10 @@
   function loadTheme() {
     try {
       const saved = localStorage.getItem("staszek_theme");
-      if (saved === "light" || saved === "dark") return saved;
+      if (saved === "dark") return "navy";
+      if (saved === "light" || saved === "navy" || saved === "black") return saved;
     } catch {}
-    return window.matchMedia?.("(prefers-color-scheme: light)")?.matches
-      ? "light"
-      : "dark";
+    return "navy";
   }
 
   function parseRoute() {
@@ -258,7 +257,12 @@
         class: "icon-btn",
         type: "button",
         title: "Zmień motyw",
-        onClick: () => setTheme(state.theme === "dark" ? "light" : "dark"),
+        onClick: () => {
+          const order = ["navy", "light", "black"];
+          const idx = Math.max(0, order.indexOf(state.theme));
+          const next = order[(idx + 1) % order.length];
+          setTheme(next);
+        },
       },
       "Motyw"
     );
@@ -343,6 +347,7 @@
   function pageStart() {
     const { candidate, images } = window.STASZEK;
     const ig = "https://www.instagram.com/tomaszewski_2026/";
+    const creatorUrl = "http://filip.biskupski.site/public/";
 
     const hero = el("section", { class: "hero reveal" }, [
       el("div", {
@@ -460,9 +465,24 @@
         el(
           "div",
           { class: "chips", style: { marginTop: "10px" } },
-          window.STASZEK.staff.map((n) =>
-            el("span", { class: "chip", role: "listitem" }, n)
-          )
+          window.STASZEK.staff.map((n) => {
+            if (n === "Filip Biskupski") {
+              return el(
+                "a",
+                {
+                  class: "chip chip-link",
+                  href: creatorUrl,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  role: "listitem",
+                  title: "Otwórz stronę Filipa Biskupskiego",
+                  "aria-label": "Filip Biskupski (link)",
+                },
+                n
+              );
+            }
+            return el("span", { class: "chip", role: "listitem" }, n);
+          })
         ),
       ]),
     ]);
@@ -1169,7 +1189,8 @@
       t += 0.016;
       ctx.clearRect(0, 0, w, h);
 
-      const isLight = document.documentElement.getAttribute("data-theme") === "light";
+      const theme = document.documentElement.getAttribute("data-theme") || "navy";
+      const isLight = theme === "light";
       ctx.fillStyle = isLight ? "rgba(10,10,14,0.08)" : "rgba(255,255,255,0.06)";
       for (const s of stars) {
         const y = (s.y + t * (10 * s.s)) % (h + 20);

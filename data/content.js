@@ -149,6 +149,7 @@ Pytanie brzmi: czy jesteś w Rodzinie, czy stoisz z boku i patrzysz, jak inni wy
   ];
 
   const staff = [
+    "Filip Biskupski",
     "Oskar Sienkiewicz",
     "Wojciech Kwiatkowski",
     "Łukasz Parda",
@@ -163,7 +164,6 @@ Pytanie brzmi: czy jesteś w Rodzinie, czy stoisz z boku i patrzysz, jak inni wy
     "Kostek Opas",
     "Ryszard Karaś",
     "Aleksander Kołtuński",
-    "Filip Biskupski",
     "Przemysław Kamiński",
     "Adam Zaleski",
     "Miron Ławrynowicz",
