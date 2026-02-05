@@ -281,19 +281,29 @@ body {
   .topbar-inner {
     gap: 10px;
     padding: 12px 12px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand tools"
+      "nav nav";
+    align-items: center;
   }
 
   .brand {
-    flex: 1;
-    min-width: 220px;
+    grid-area: brand;
+    min-width: 0;
   }
 
   .tools {
-    margin-left: auto;
+    grid-area: tools;
+    margin-left: 0;
+    justify-self: end;
+    gap: 6px;
+    flex-wrap: nowrap;
   }
 
   .nav {
-    order: 3;
+    grid-area: nav;
     width: 100%;
     margin-left: 0;
     justify-content: flex-start;
@@ -308,8 +318,8 @@ body {
   }
 
   .icon-btn {
-    padding: 8px 10px;
-    font-size: 13px;
+    padding: 7px 9px;
+    font-size: 12px;
   }
 
   .btn-full {

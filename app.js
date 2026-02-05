@@ -274,7 +274,7 @@
         title: "Szybka nawigacja (Ctrl+K)",
         onClick: () => openCommandPalette(),
       },
-      "Ctrl+K"
+      [el("span", { class: "btn-full" }, "Ctrl+K"), el("span", { class: "btn-short", "aria-hidden": "true" }, "Menu")]
     );
 
     const creditLink = el(
