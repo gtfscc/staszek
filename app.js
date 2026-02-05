@@ -1,6 +1,7 @@
 (() => {
   const state = {
     route: "",
+    theme: "dark",
     posterIndex: 0,
     filters: {
       aktualnosci: { search: "", tag: "" },
@@ -44,6 +45,24 @@
       else node.appendChild(child);
     }
     return node;
+  }
+
+  function setTheme(theme) {
+    state.theme = theme;
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("staszek_theme", theme);
+    } catch {}
+  }
+
+  function loadTheme() {
+    try {
+      const saved = localStorage.getItem("staszek_theme");
+      if (saved === "light" || saved === "dark") return saved;
+    } catch {}
+    return window.matchMedia?.("(prefers-color-scheme: light)")?.matches
+      ? "light"
+      : "dark";
   }
 
   function parseRoute() {
@@ -232,6 +251,16 @@
       nav.appendChild(a);
     }
 
+    const themeBtn = el(
+      "button",
+      {
+        class: "icon-btn",
+        type: "button",
+        title: "Zmień motyw",
+        onClick: () => setTheme(state.theme === "dark" ? "light" : "dark"),
+      },
+      "Motyw"
+    );
     const cmdBtn = el(
       "button",
       {
@@ -242,7 +271,7 @@
       },
       "Ctrl+K"
     );
-    const tools = el("div", { class: "tools" }, [cmdBtn]);
+    const tools = el("div", { class: "tools" }, [cmdBtn, themeBtn]);
 
     const inner = el("div", { class: "topbar-inner" }, [brand, nav, tools]);
     return el("header", { class: "topbar" }, inner);
@@ -1125,7 +1154,8 @@
       t += 0.016;
       ctx.clearRect(0, 0, w, h);
 
-      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      const isLight = document.documentElement.getAttribute("data-theme") === "light";
+      ctx.fillStyle = isLight ? "rgba(10,10,14,0.08)" : "rgba(255,255,255,0.06)";
       for (const s of stars) {
         const y = (s.y + t * (10 * s.s)) % (h + 20);
         const tw = 0.6 + 0.4 * Math.sin(t * 1.6 + s.x * 0.01);
@@ -1252,6 +1282,7 @@
       return;
     }
 
+    setTheme(loadTheme());
     initBackground();
     initShortcuts();
 
