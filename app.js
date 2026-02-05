@@ -251,19 +251,11 @@
   function buildFooter() {
     const candidate = window.STASZEK?.candidate;
     const ig = "https://www.instagram.com/tomaszewski_2026/";
-    const creator = "http://filip.biskupski.site/public/";
     const foot = el("footer", { class: "footer" }, [
       el(
         "div",
         {},
-        `© ${new Date().getFullYear()} • ${candidate?.name || "Stanisław"} • ${
-          candidate?.className || ""
-        } ${candidate?.profile || ""} • ${window.STASZEK?.hashtag || ""}`
-      ),
-      el(
-        "div",
-        { style: { marginTop: "6px" } },
-        "Tip: działa najlepiej przez lokalny serwer (np. python3 -m http.server)."
+        `© ${new Date().getFullYear()} ${candidate?.name || "Stanisław Tomaszewski"}. Wszelkie prawa zastrzeżone.`
       ),
       el(
         "div",
@@ -276,18 +268,6 @@
             "@tomaszewski_2026"
           ),
           " • Masz pomysł? Napisz na IG.",
-        ]
-      ),
-      el(
-        "div",
-        { style: { marginTop: "6px" } },
-        [
-          "Twórca strony: ",
-          el(
-            "a",
-            { href: creator, target: "_blank", rel: "noopener noreferrer" },
-            "Filip Biskupski"
-          ),
         ]
       ),
     ]);
@@ -430,20 +410,10 @@
       ]),
     ]);
 
-    const note = el("section", { class: "card reveal", style: { marginTop: "14px" } }, [
-      el("h3", {}, "Pro tip (edytowanie)"),
-      el(
-        "p",
-        {},
-        "Posty dodajesz w pliku data/content.js (sekcja news). To w 100% statyczna strona — bez backendu."
-      ),
-    ]);
-
     return el("div", {}, [
       hero,
       quick,
       staffSection,
-      note,
     ]);
   }
 
@@ -609,22 +579,12 @@
       list.appendChild(card);
     }
 
-    const hint = el("div", { class: "card reveal", style: { marginTop: "12px" } }, [
-      el("h3", {}, "Dodawanie nowych postów"),
-      el(
-        "p",
-        {},
-        "Edytuj tablicę window.STASZEK.news w pliku data/content.js. Możesz dopisać date, tags i image."
-      ),
-    ]);
-
     return el("div", {}, [
       title,
       lead,
       searchRow,
       filterPanel,
       list,
-      hint,
     ]);
   }
 
@@ -959,16 +919,7 @@
       grid.appendChild(card);
     });
 
-    const tip = el("div", { class: "card reveal", style: { marginTop: "12px" } }, [
-      el("h3", {}, "Tip"),
-      el(
-        "p",
-        {},
-        "Jeśli chcesz dodać nowe plakaty, dopisz je w data/content.js → images.posters."
-      ),
-    ]);
-
-    return el("div", {}, [title, lead, grid, tip]);
+    return el("div", {}, [title, lead, grid]);
   }
 
   function buildModal(id, titleId, bodyId, onClose) {
