@@ -287,7 +287,10 @@
         title: "Wykonanie strony: Filip Biskupski",
         "aria-label": "Wykonanie strony: Filip Biskupski",
       },
-      "Twórca strony"
+      [
+        el("span", { class: "btn-full" }, "Twórca strony"),
+        el("span", { class: "btn-short", "aria-hidden": "true" }, "Twórca"),
+      ]
     );
 
     const tools = el("div", { class: "tools" }, [cmdBtn, themeBtn, creditLink]);
