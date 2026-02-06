@@ -20,42 +20,6 @@
     Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-/* Light theme (toggle in JS) */
-[data-theme="light"] {
-  --bg: #f7f5f0;
-  --bg-elev: rgba(10, 10, 14, 0.06);
-  --text: rgba(10, 10, 14, 0.92);
-  --muted: rgba(10, 10, 14, 0.68);
-  --soft: rgba(10, 10, 14, 0.12);
-  --border: rgba(10, 10, 14, 0.12);
-  --shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
-}
-
-[data-theme="light"] body {
-  background: radial-gradient(1200px 900px at 30% 10%, rgba(198, 38, 46, 0.12), transparent 55%),
-    radial-gradient(900px 700px at 75% 15%, rgba(242, 196, 90, 0.12), transparent 55%),
-    radial-gradient(900px 900px at 50% 95%, rgba(87, 209, 139, 0.08), transparent 60%),
-    var(--bg);
-}
-
-/* Pure black theme (toggle in JS) */
-[data-theme="black"] {
-  --bg: #000000;
-  --bg-elev: rgba(255, 255, 255, 0.06);
-  --text: rgba(255, 255, 255, 0.92);
-  --muted: rgba(255, 255, 255, 0.68);
-  --soft: rgba(255, 255, 255, 0.12);
-  --border: rgba(255, 255, 255, 0.14);
-  --shadow: 0 14px 40px rgba(0, 0, 0, 0.72);
-}
-
-[data-theme="black"] body {
-  background: radial-gradient(1200px 900px at 30% 10%, rgba(198, 38, 46, 0.14), transparent 60%),
-    radial-gradient(900px 700px at 75% 15%, rgba(242, 196, 90, 0.12), transparent 60%),
-    radial-gradient(900px 900px at 50% 95%, rgba(87, 209, 139, 0.08), transparent 65%),
-    var(--bg);
-}
-
 *,
 *::before,
 *::after {
