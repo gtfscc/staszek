@@ -61,7 +61,7 @@
       start: "audio/audio-mian-page.mp3",
       aktualnosci: "audio/audio-aktualnosci.mp3",
       plakaty: "audio/audio-plakaty.mp3",
-      pomysly: "audio/audio-mian-page.mp3",
+      pomysly: "audio/audio-pomysly.mp3",
     };
     return map[routeId] || map.start;
   }
