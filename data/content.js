@@ -183,6 +183,33 @@ Pytanie brzmi: czy jesteś w Rodzinie, czy stoisz z boku i patrzysz, jak inni wy
 
   const news = [
     {
+      id: "post-budzet",
+      title: "Budżet uczniowski — propozycja nie do odrzucenia",
+      date: "",
+      image: "zdjęcia/budzet_uczniowski.png",
+      tags: ["budżet", "samorząd", "dyrekcja"],
+      body: `Przychodzisz do mnie z genialnym i ambitnym pomysłem bądź propozycją, ale nie masz pieniędzy?
+
+To wielki brak szacunku dla twoich możliwości🫶
+
+A więc, złożę Ci propozycję nie do odrzucenia.
+
+🌹 Budżet Uczniowski🌹
+
+Koszty? Dla nas nie istnieją. Dysponujemy naprawdę każdymi środkami.
+
+Tak, alla lettera każdymi, mamy absolutne carte blanche💰💰
+
+Jesteśmy otwarci na wszystko. Cokolwiek zechcesz zorganizować na naszym terenie, załatwimy to.
+I wiedz jedno, mamy na to pełne błogosławieństwo samej Dyrekcji. Góra przybiła swoją pieczęć. Nikt nie będzie zadawał zbędnych pytań.
+
+Przynieś Nam wniosek, moi Consiglieri zajmą się resztą 🔫🍷
+
+Capisci?????🇮🇹
+
+#staszekdlastaszica`,
+    },
+    {
       id: "post-program",
       title: "#STASZEK DLA STASZICA — 13 punktów",
       date: "",
