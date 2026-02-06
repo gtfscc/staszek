@@ -11,15 +11,26 @@ set -euo pipefail
 GITHUB_USER="${GITHUB_USER:-FilekBananas}"
 REPO_NAME="${REPO_NAME:-staszek}"
 REMOTE_NAME="${REMOTE_NAME:-origin}"
-# Default to SSH (more reliable than HTTPS for some networks/macOS setups).
-# You can still override via: REMOTE_URL=https://github.com/<user>/<repo>.git bash gh.sh
-REMOTE_URL="${REMOTE_URL:-git@github.com:${GITHUB_USER}/${REPO_NAME}.git}"
+# Default to HTTPS (classic). You can override via:
+# - SSH:   REMOTE_URL=git@github.com:<user>/<repo>.git bash gh.sh
+# - HTTPS: REMOTE_URL=https://github.com/<user>/<repo>.git bash gh.sh
+REMOTE_URL="${REMOTE_URL:-https://github.com/${GITHUB_USER}/${REPO_NAME}.git}"
 BRANCH_MAIN="${BRANCH_MAIN:-main}"
 PAGES_BRANCH="${PAGES_BRANCH:-gh-pages}"
 COMMIT_MSG="${COMMIT_MSG:-deploy}"
 SOURCE_DIR="${SOURCE_DIR:-.}"
 FORCE_MAIN_PUSH="${FORCE_MAIN_PUSH:-0}"
 SKIP_MAIN_PUSH="${SKIP_MAIN_PUSH:-0}"
+SSH_IDENTITY_FILE="${SSH_IDENTITY_FILE:-}"
+
+if [[ -n "$SSH_IDENTITY_FILE" ]]; then
+  if [[ ! -f "$SSH_IDENTITY_FILE" ]]; then
+    echo "Error: SSH_IDENTITY_FILE does not exist: $SSH_IDENTITY_FILE"
+    exit 1
+  fi
+  identity_escaped="$(printf "%q" "$SSH_IDENTITY_FILE")"
+  export GIT_SSH_COMMAND="ssh -i $identity_escaped -o IdentitiesOnly=yes"
+fi
 
 if ! command -v git >/dev/null 2>&1; then
   echo "Error: git not found."
@@ -93,6 +104,24 @@ EOF
       else
         cat "$push_log" 2>/dev/null || true
         rm -f "$push_log" >/dev/null 2>&1 || true
+        if grep -Eqi "denied to deploy key" "$push_log" 2>/dev/null; then
+          cat <<EOF
+
+SSH auth is using a deploy key that doesn't have access to this repo.
+
+Fix options:
+1) Use your personal SSH key for this push:
+     SSH_IDENTITY_FILE=~/.ssh/id_ed25519 bash gh.sh
+   (and make sure that public key is added in GitHub → Settings → SSH keys)
+2) Or add the deploy key to this repo with write access:
+   GitHub → Repo Settings → Deploy keys → Add key → Allow write access
+
+Tip: check which key is used with:
+     ssh -T git@github.com
+
+EOF
+          exit 1
+        fi
         cat <<EOF
 
 Push failed (not a rebase issue). Common causes:
