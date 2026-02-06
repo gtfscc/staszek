@@ -36,6 +36,8 @@
       const v = localStorage.getItem("staszek_audio");
       if (v === "0") return false;
       if (v === "1") return true;
+      // First visit: default ON and persist the choice.
+      localStorage.setItem("staszek_audio", "1");
     } catch {}
     return true;
   }
@@ -64,6 +66,101 @@
       pomysly: "audio/audio-pomysly.mp3",
     };
     return map[routeId] || map.start;
+  }
+
+  function normalizeKey(value) {
+    const s = String(value || "").trim().toLowerCase();
+    if (!s) return "";
+    try {
+      return s
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+    } catch {
+      return s.replace(/[^a-z0-9]+/g, " ").trim();
+    }
+  }
+
+  function firstParagraph(text) {
+    const t = String(text || "").replace(/\r\n/g, "\n");
+    const blocks = t
+      .split(/\n{2,}/g)
+      .map((b) => b.trim())
+      .filter(Boolean);
+    return blocks[0] || "";
+  }
+
+  function extractRoseTitle(text) {
+    const t = String(text || "");
+    const m = t.match(/🌹\s*([^🌹\n]{3,80})\s*🌹/);
+    return m ? m[1].trim() : "";
+  }
+
+  function leadFromBody(body, roseTitle) {
+    const t = String(body || "").replace(/\r\n/g, "\n").trim();
+    if (!t) return "";
+    let work = t;
+    if (roseTitle) {
+      const idx = work.indexOf(roseTitle);
+      if (idx !== -1) work = work.slice(idx + roseTitle.length);
+    }
+    const p = firstParagraph(work);
+    return p
+      .replace(/\s+/g, " ")
+      .replace(/#\w+/g, "")
+      .trim()
+      .slice(0, 180);
+  }
+
+  function shouldPromotePostToIdea(post) {
+    const tags = (post?.tags || []).map((x) => normalizeKey(x));
+    const hasIdeaTag = tags.some((t) =>
+      ["pomysly", "pomysl", "pomys", "pomysły", "program", "postulat", "postulaty", "idea"].includes(t)
+    );
+    const hasRose = /🌹/.test(String(post?.body || "")) && !!extractRoseTitle(post?.body || "");
+    return Boolean(post?.program === true || hasIdeaTag || hasRose);
+  }
+
+  function augmentProgramFromNews() {
+    const s = window.STASZEK;
+    if (!s?.program || !s?.news) return;
+
+    const existingTitles = new Set(s.program.map((p) => normalizeKey(p.title)));
+    let nextId = s.program.reduce((acc, p) => {
+      const n = typeof p.id === "number" ? p.id : parseInt(String(p.id), 10);
+      return Number.isFinite(n) ? Math.max(acc, n) : acc;
+    }, 0);
+
+    for (const post of s.news) {
+      if (!shouldPromotePostToIdea(post)) continue;
+
+      const roseTitle = extractRoseTitle(post.body);
+      const title = (roseTitle || post.title || "").replace(/\s+/g, " ").trim();
+      const key = normalizeKey(title);
+      if (!key) continue;
+      if (existingTitles.has(key)) continue;
+
+      const lead = leadFromBody(post.body, roseTitle) || "Nowy pomysł z aktualności.";
+      const tags = Array.from(
+        new Set((post.tags || []).map((t) => String(t)).filter(Boolean))
+      );
+      const approved = (post.tags || [])
+        .map((t) => normalizeKey(t))
+        .includes("dyrekcja");
+
+      nextId += 1;
+      s.program.push({
+        id: nextId,
+        title,
+        approved,
+        tags,
+        lead,
+        spotlightImage: post.image || "",
+        spotlightText: post.body || "",
+      });
+      existingTitles.add(key);
+    }
   }
 
   function setupAudioUnlockOnce() {
@@ -132,6 +229,83 @@
       else node.appendChild(child);
     }
     return node;
+  }
+
+  function svg(tag, attrs = {}, children = []) {
+    const NS = "http://www.w3.org/2000/svg";
+    const node = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") node.setAttribute("class", v);
+      else if (k === "style") Object.assign(node.style, v);
+      else if (v === true) node.setAttribute(k, "");
+      else if (v === false || v == null) continue;
+      else node.setAttribute(k, String(v));
+    }
+    const arr = Array.isArray(children) ? children : [children];
+    for (const child of arr) {
+      if (child == null) continue;
+      if (typeof child === "string")
+        node.appendChild(document.createTextNode(child));
+      else node.appendChild(child);
+    }
+    return node;
+  }
+
+  function audioIcon(isOn) {
+    const base = [
+      svg("path", {
+        d: "M11 5L6 9H3v6h3l5 4V5z",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "2",
+        "stroke-linejoin": "round",
+      }),
+    ];
+    const waves = [
+      svg("path", {
+        d: "M15.5 8.5a4 4 0 010 7",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "2",
+        "stroke-linecap": "round",
+      }),
+      svg("path", {
+        d: "M17.5 6.5a7 7 0 010 11",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "2",
+        "stroke-linecap": "round",
+      }),
+    ];
+    const mute = [
+      svg("path", {
+        d: "M15 9l6 6",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "2",
+        "stroke-linecap": "round",
+      }),
+      svg("path", {
+        d: "M21 9l-6 6",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "2",
+        "stroke-linecap": "round",
+      }),
+    ];
+
+    return svg(
+      "svg",
+      {
+        class: "icon-svg",
+        viewBox: "0 0 24 24",
+        width: "20",
+        height: "20",
+        "aria-hidden": "true",
+        focusable: "false",
+      },
+      [...base, ...(isOn ? waves : mute)]
+    );
   }
 
   function parseRoute() {
@@ -324,11 +498,12 @@
     const audioBtn = el(
       "button",
       {
-        class: "icon-btn",
+        class: "icon-btn icon-only",
         type: "button",
         title: state.audio.enabled
           ? "Wycisz / wyłącz dźwięk"
           : "Włącz dźwięk",
+        "aria-pressed": state.audio.enabled,
         onClick: () => {
           state.audio.enabled = !state.audio.enabled;
           saveAudioEnabled(state.audio.enabled);
@@ -337,12 +512,12 @@
         },
       },
       [
+        audioIcon(state.audio.enabled),
         el(
           "span",
-          { class: "btn-full" },
-          state.audio.enabled ? "Dźwięk: ON" : "Dźwięk: OFF"
+          { class: "sr-only" },
+          state.audio.enabled ? "Dźwięk włączony" : "Dźwięk wyłączony"
         ),
-        el("span", { class: "btn-short", "aria-hidden": "true" }, "Dźw."),
       ]
     );
 
@@ -1260,6 +1435,7 @@
 
     state.audio.enabled = loadAudioEnabled();
     setupAudioUnlockOnce();
+    augmentProgramFromNews();
 
     initBackground();
     initShortcuts();
