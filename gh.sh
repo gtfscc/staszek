@@ -15,6 +15,7 @@ REMOTE_NAME="${REMOTE_NAME:-origin}"
 # - SSH:   REMOTE_URL=git@github.com:<user>/<repo>.git bash gh.sh
 # - HTTPS: REMOTE_URL=https://github.com/<user>/<repo>.git bash gh.sh
 REMOTE_URL="${REMOTE_URL:-https://github.com/${GITHUB_USER}/${REPO_NAME}.git}"
+UPDATE_REMOTE_URL="${UPDATE_REMOTE_URL:-0}"
 BRANCH_MAIN="${BRANCH_MAIN:-main}"
 PAGES_BRANCH="${PAGES_BRANCH:-gh-pages}"
 COMMIT_MSG="${COMMIT_MSG:-deploy}"
@@ -50,7 +51,7 @@ fi
 current_remote_url="$(git remote get-url "$REMOTE_NAME" 2>/dev/null || true)"
 if [[ -z "$current_remote_url" ]]; then
   git remote add "$REMOTE_NAME" "$REMOTE_URL"
-elif [[ "$current_remote_url" != "$REMOTE_URL" ]]; then
+elif [[ "$UPDATE_REMOTE_URL" == "1" && "$current_remote_url" != "$REMOTE_URL" ]]; then
   echo "Updating remote '$REMOTE_NAME':"
   echo "  from: $current_remote_url"
   echo "  to:   $REMOTE_URL"
