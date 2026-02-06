@@ -17,6 +17,7 @@ PAGES_BRANCH="${PAGES_BRANCH:-gh-pages}"
 COMMIT_MSG="${COMMIT_MSG:-deploy}"
 SOURCE_DIR="${SOURCE_DIR:-.}"
 FORCE_MAIN_PUSH="${FORCE_MAIN_PUSH:-0}"
+SKIP_MAIN_PUSH="${SKIP_MAIN_PUSH:-0}"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "Error: git not found."
@@ -58,13 +59,20 @@ push_main() {
   fi
 }
 
-if ! push_main; then
-  echo "Main push rejected. Trying to rebase onto remote '$REMOTE_NAME/$BRANCH_MAIN'…"
-  git fetch "$REMOTE_NAME" "$BRANCH_MAIN" || true
-  if git pull --rebase "$REMOTE_NAME" "$BRANCH_MAIN"; then
-    push_main
-  else
-    cat <<EOF
+if [[ "$SKIP_MAIN_PUSH" != "1" ]]; then
+  push_log="$(mktemp -t staszek-push.XXXXXX 2>/dev/null || mktemp 2>/dev/null || true)"
+  if [[ -n "${push_log:-}" ]]; then
+    if push_main >"$push_log" 2>&1; then
+      rm -f "$push_log" >/dev/null 2>&1 || true
+    else
+      # If this is a non-fast-forward / fetch-first, try rebase. Otherwise, exit with guidance.
+      if grep -Eqi "(fetch first|non-fast-forward|rejected)" "$push_log" 2>/dev/null; then
+        echo "Main push rejected. Trying to rebase onto remote '$REMOTE_NAME/$BRANCH_MAIN'…"
+        git fetch "$REMOTE_NAME" "$BRANCH_MAIN" || true
+        if git pull --rebase "$REMOTE_NAME" "$BRANCH_MAIN"; then
+          push_main
+        else
+          cat <<EOF
 
 Rebase failed (probably conflicts).
 
@@ -73,9 +81,39 @@ Options:
 2) Abort rebase:            git rebase --abort
 3) If you want to overwrite the remote main branch:
      FORCE_MAIN_PUSH=1 bash gh.sh
+4) If you only want to publish GitHub Pages (skip main push):
+     git rebase --abort
+     SKIP_MAIN_PUSH=1 bash gh.sh
 
 EOF
-    exit 1
+          exit 1
+        fi
+      else
+        cat "$push_log" 2>/dev/null || true
+        rm -f "$push_log" >/dev/null 2>&1 || true
+        cat <<EOF
+
+Push failed (not a rebase issue). Common causes:
+- Internet/DNS problems
+- GitHub auth/token issues (HTTPS)
+
+Try:
+1) Retry in a minute
+2) Use SSH remote:
+     REMOTE_URL=git@github.com:${GITHUB_USER}/${REPO_NAME}.git bash gh.sh
+3) Force HTTP/1.1 (helps some HTTP 400 issues):
+     git config --global http.version HTTP/1.1
+
+EOF
+        exit 1
+      fi
+      rm -f "$push_log" >/dev/null 2>&1 || true
+    fi
+  else
+    if ! push_main; then
+      echo "Push failed. Try SSH: REMOTE_URL=git@github.com:${GITHUB_USER}/${REPO_NAME}.git bash gh.sh"
+      exit 1
+    fi
   fi
 fi
 
