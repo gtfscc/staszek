@@ -378,9 +378,6 @@ body {
     padding: 10px;
   }
 
-  .cmd-hint {
-    display: none;
-  }
 }
 .hero-kicker {
   display: inline-flex;

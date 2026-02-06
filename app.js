@@ -11,7 +11,6 @@
 
   let renderTimer = 0;
   let restoreFocus = null;
-  let cmdPaletteClose = null;
 
   const ROUTES = [
     { id: "start", label: "Start", hash: "#/" },
@@ -266,16 +265,6 @@
       },
       "Motyw"
     );
-    const cmdBtn = el(
-      "button",
-      {
-        class: "icon-btn",
-        type: "button",
-        title: "Szybka nawigacja (Ctrl+K)",
-        onClick: () => openCommandPalette(),
-      },
-      [el("span", { class: "btn-full" }, "Ctrl+K"), el("span", { class: "btn-short", "aria-hidden": "true" }, "Menu")]
-    );
 
     const creditLink = el(
       "a",
@@ -293,7 +282,7 @@
       ]
     );
 
-    const tools = el("div", { class: "tools" }, [cmdBtn, themeBtn, creditLink]);
+    const tools = el("div", { class: "tools" }, [themeBtn, creditLink]);
 
     const inner = el("div", { class: "topbar-inner" }, [brand, nav, tools]);
     return el("header", { class: "topbar" }, inner);
@@ -436,7 +425,7 @@
       ]),
       el("div", { class: "card reveal" }, [
         el("h3", {}, "Aktualności"),
-        el("p", {}, "Tutaj wrzucasz najnowsze posty i ogłoszenia."),
+        el("p", {}, "Najnowsze posty kampanii i ogłoszenia."),
         el("div", { class: "meta-row" }, [
           el("span", { class: "badge" }, "Posty"),
           el("a", { class: "btn", href: "#/aktualnosci" }, "Otwórz"),
@@ -586,7 +575,7 @@
 
     const filterPanel = el("div", { class: "card reveal" }, [
       el("h3", {}, "Filtry"),
-      el("p", {}, "Ctrl+K → szybka nawigacja po podstronach."),
+      el("p", {}, "Wyszukuj i filtruj po tagach."),
       el("div", { style: { marginTop: "10px" } }, chips),
     ]);
 
@@ -837,37 +826,13 @@
     ]);
 
     const approvedCount = points.filter((p) => p.approved).length;
-    const stats = el("div", { class: "grid three", style: { marginTop: "10px" } }, [
+    const stats = el("div", { class: "grid", style: { marginTop: "10px" } }, [
       el("div", { class: "card reveal" }, [
         el("h3", {}, "Status"),
         el("p", {}, "Góra zaakceptowała plan — egzekucja postulatów."),
         el("div", { class: "meta-row" }, [
           el("span", { class: "badge ok" }, `✅ Approved: ${approvedCount}/${points.length}`),
           el("span", { class: "badge accent" }, "Kontrakt"),
-        ]),
-      ]),
-      el("div", { class: "card reveal" }, [
-        el("h3", {}, "Nawigacja"),
-        el("p", {}, "Kliknij ‘Szczegóły’, żeby otworzyć kartę punktu."),
-        el("div", { class: "meta-row" }, [
-          el("span", { class: "badge" }, "Modal"),
-          el("span", { class: "badge" }, "Wyszukiwanie"),
-        ]),
-      ]),
-      el("div", { class: "card reveal" }, [
-        el("h3", {}, "Udostępnianie"),
-        el("p", {}, "Każdy punkt ma swój link — do wysłania znajomym."),
-        el("div", { class: "meta-row" }, [
-          el("span", { class: "badge" }, "Linki"),
-          el("button", {
-            class: "btn",
-            type: "button",
-            onClick: async () => {
-              const base = location.href.split("#")[0];
-              const ok = await copyText(`${base}#/pomysly`);
-              toast(ok ? "Link skopiowany." : "Nie udało się skopiować linku.");
-            },
-          }, "Skopiuj link"),
         ]),
       ]),
     ]);
@@ -1037,115 +1002,12 @@
     return modal;
   }
 
-  function openCommandPalette() {
-    const modal = $("#cmdModal");
-    const title = $("#cmdTitle");
-    const body = $("#cmdBody");
-    if (!modal || !title || !body) return;
-    if (modal.getAttribute("aria-hidden") === "false") return;
-
-    title.textContent = "Szybka nawigacja";
-    body.textContent = "";
-
-    const hint = el("div", { class: "card cmd-hint" }, [
-      el("h3", {}, "Skróty"),
-      el("p", {}, "Enter: przejdź • Esc: zamknij • Strzałki: wybór"),
-    ]);
-    body.appendChild(hint);
-
-    let active = 0;
-    const list = el("div", { class: "grid", style: { marginTop: "10px" } });
-
-    function renderList() {
-      list.textContent = "";
-      ROUTES.forEach((r, idx) => {
-        const isActive = idx === active;
-        const row = el(
-          "button",
-          {
-            class: "btn",
-            type: "button",
-            style: {
-              justifyContent: "space-between",
-              background: isActive ? "rgba(242,196,90,0.14)" : "rgba(255,255,255,0.06)",
-              borderColor: isActive ? "rgba(242,196,90,0.35)" : "rgba(255,255,255,0.14)",
-            },
-            onClick: () => {
-              navTo(r.hash);
-              closeCmd();
-            },
-          },
-          [
-            el("span", {}, r.label),
-            el("span", { class: "badge" }, r.hash),
-          ]
-        );
-        list.appendChild(row);
-      });
-    }
-
-    function onKey(e) {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        closeCmd();
-        return;
-      }
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        active = clamp(active + 1, 0, ROUTES.length - 1);
-        renderList();
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        active = clamp(active - 1, 0, ROUTES.length - 1);
-        renderList();
-        return;
-      }
-      if (e.key === "Enter") {
-        e.preventDefault();
-        navTo(ROUTES[active].hash);
-        closeCmd();
-      }
-    }
-
-    function closeCmd() {
-      modal.removeEventListener("keydown", onKey);
-      modal.setAttribute("aria-hidden", "true");
-      cmdPaletteClose = null;
-    }
-
-    renderList();
-    body.appendChild(list);
-
-    modal.setAttribute("aria-hidden", "false");
-    modal.addEventListener("keydown", onKey);
-    modal.focus();
-    cmdPaletteClose = closeCmd;
-  }
-
-  function closeCommandPalette() {
-    const modal = $("#cmdModal");
-    if (!modal) return;
-    if (modal.getAttribute("aria-hidden") !== "false") return;
-    if (typeof cmdPaletteClose === "function") cmdPaletteClose();
-    else modal.setAttribute("aria-hidden", "true");
-  }
-
   function initShortcuts() {
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         if ($("#posterModal")?.getAttribute("aria-hidden") === "false")
           closePosterModal();
         if ($("#modal")?.getAttribute("aria-hidden") === "false") closeModal();
-        if ($("#cmdModal")?.getAttribute("aria-hidden") === "false")
-          closeCommandPalette();
-        return;
-      }
-      const isCtrlK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k";
-      if (isCtrlK) {
-        e.preventDefault();
-        openCommandPalette();
         return;
       }
     });
@@ -1304,11 +1166,6 @@
     if (!$("#posterModal")) {
       app.appendChild(
         buildModal("posterModal", "posterTitle", "posterBody", closePosterModal)
-      );
-    }
-    if (!$("#cmdModal")) {
-      app.appendChild(
-        buildModal("cmdModal", "cmdTitle", "cmdBody", closeCommandPalette)
       );
     }
   }
