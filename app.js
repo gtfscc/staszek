@@ -14,6 +14,7 @@
       pomysly: { search: "", tag: "" },
     },
   };
+  const AUDIO_FEATURE_ENABLED = false;
 
   let renderTimer = 0;
   let restoreFocus = null;
@@ -438,40 +439,43 @@
       nav.appendChild(a);
     }
 
-    const iconWrap = el("span", { class: "audio-icon" }, audioIcon(state.audio.enabled));
-    const sr = el(
-      "span",
-      { class: "sr-only" },
-      state.audio.enabled ? "Dźwięk włączony" : "Dźwięk wyłączony"
-    );
+    let audioBtn = null;
+    if (AUDIO_FEATURE_ENABLED) {
+      const iconWrap = el("span", { class: "audio-icon" }, audioIcon(state.audio.enabled));
+      const sr = el(
+        "span",
+        { class: "sr-only" },
+        state.audio.enabled ? "Dźwięk włączony" : "Dźwięk wyłączony"
+      );
 
-    const audioBtn = el(
-      "button",
-      {
-        class: "icon-btn icon-only",
-        type: "button",
-        title: "",
-        "aria-pressed": "false",
-        onClick: () => {
-          state.audio.enabled = !state.audio.enabled;
-          saveAudioEnabled(state.audio.enabled);
-          syncAudioWithRoute(state.route || "start");
-          refreshAudioBtn();
+      audioBtn = el(
+        "button",
+        {
+          class: "icon-btn icon-only",
+          type: "button",
+          title: "",
+          "aria-pressed": "false",
+          onClick: () => {
+            state.audio.enabled = !state.audio.enabled;
+            saveAudioEnabled(state.audio.enabled);
+            syncAudioWithRoute(state.route || "start");
+            refreshAudioBtn();
+          },
         },
-      },
-      [iconWrap, sr]
-    );
+        [iconWrap, sr]
+      );
 
-    function refreshAudioBtn() {
-      audioBtn.title = state.audio.enabled
-        ? "Wycisz / wyłącz dźwięk"
-        : "Włącz dźwięk";
-      audioBtn.setAttribute("aria-pressed", state.audio.enabled ? "true" : "false");
-      iconWrap.textContent = "";
-      iconWrap.appendChild(audioIcon(state.audio.enabled));
-      sr.textContent = state.audio.enabled ? "Dźwięk włączony" : "Dźwięk wyłączony";
+      function refreshAudioBtn() {
+        audioBtn.title = state.audio.enabled
+          ? "Wycisz / wyłącz dźwięk"
+          : "Włącz dźwięk";
+        audioBtn.setAttribute("aria-pressed", state.audio.enabled ? "true" : "false");
+        iconWrap.textContent = "";
+        iconWrap.appendChild(audioIcon(state.audio.enabled));
+        sr.textContent = state.audio.enabled ? "Dźwięk włączony" : "Dźwięk wyłączony";
+      }
+      refreshAudioBtn();
     }
-    refreshAudioBtn();
 
     const creditLink = el(
       "a",
@@ -489,7 +493,11 @@
       ]
     );
 
-    const tools = el("div", { class: "tools" }, [audioBtn, creditLink]);
+    const tools = el(
+      "div",
+      { class: "tools" },
+      AUDIO_FEATURE_ENABLED ? [audioBtn, creditLink] : [creditLink]
+    );
 
     const inner = el("div", { class: "topbar-inner" }, [brand, nav, tools]);
     return el("header", { class: "topbar" }, inner);
@@ -1311,7 +1319,7 @@
     ensureModals();
     reveal(content);
 
-    syncAudioWithRoute(id);
+    if (AUDIO_FEATURE_ENABLED) syncAudioWithRoute(id);
 
     if (id !== prevRoute) {
       try {
@@ -1385,8 +1393,12 @@
       return;
     }
 
-    state.audio.enabled = loadAudioEnabled();
-    setupAudioUnlockOnce();
+    if (AUDIO_FEATURE_ENABLED) {
+      state.audio.enabled = loadAudioEnabled();
+      setupAudioUnlockOnce();
+    } else {
+      state.audio.enabled = false;
+    }
 
     initBackground();
     initShortcuts();
